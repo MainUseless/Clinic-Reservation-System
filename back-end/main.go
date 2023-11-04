@@ -1,40 +1,38 @@
 package main
 
 import (
-    "database/sql"
-    "log"
-    "os"
+	"fmt"
+	"os"
 
-    "github.com/joho/godotenv"
-     _ "github.com/go-sql-driver/mysql"
+	"clinic-reservation-system.com/back-end/inits"
+	"clinic-reservation-system.com/back-end/models"
+	"clinic-reservation-system.com/back-end/apis"
+	_ "github.com/go-sql-driver/mysql"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 )
 
+func init(){
+    inits.InitEnv()
+    inits.InitDB()
+
+    test:= models.Doctor{Name: "test" , Email: "test", Password: "test"}
+    fmt.Print(inits.DB.Create(&test))
+}
+
+
 func main() {
-    // Load connection string from .env file
-    err := godotenv.Load()
-    if err != nil {
-        log.Fatal("failed to load env", err)
-    }
 
-    // Open a connection to PlanetScale
-    db, err := sql.Open("mysql", os.Getenv("DSN"))
-    if err != nil {
-        log.Fatalf("failed to connect: %v", err)
-    }
+    app:= fiber.New()
+    app.Use(cors.New())
 
-    rows, err := db.Query("SHOW TABLES")
-    if err != nil {
-        log.Fatalf("failed to query: %v", err)
-    }
-    defer rows.Close()
+    app.Get("/", func(c *fiber.Ctx) error {
+        return c.SendString("wsaab")
+    })
 
-    var tableName string
-    for rows.Next() {
-        if err := rows.Scan(&tableName); err != nil {
-            log.Fatalf("failed to scan row: %v", err)
-        }
-        log.Println(tableName)
-    }
+    apis.SetupRoutes(app)
 
-    defer db.Close()
+    app.Listen(":"+os.Getenv("port"))
+
 }
