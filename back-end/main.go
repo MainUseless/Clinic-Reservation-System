@@ -1,12 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
+	"clinic-reservation-system.com/back-end/apis"
 	"clinic-reservation-system.com/back-end/inits"
 	"clinic-reservation-system.com/back-end/models"
-	"clinic-reservation-system.com/back-end/apis"
 	_ "github.com/go-sql-driver/mysql"
 
 	"github.com/gofiber/fiber/v2"
@@ -16,9 +15,13 @@ import (
 func init(){
     inits.InitEnv()
     inits.InitDB()
+    
+    var Appointment models.Appointment;
+    Appointment.InitTable()
 
-    test:= models.Doctor{Name: "test" , Email: "test", Password: "test"}
-    fmt.Print(inits.DB.Create(&test))
+    var User models.User;
+    User.InitTable()
+
 }
 
 
@@ -28,11 +31,14 @@ func main() {
     app.Use(cors.New())
 
     app.Get("/", func(c *fiber.Ctx) error {
-        return c.SendString("wsaab")
+        return c.SendString("Test")
+    })
+    app.Delete("/", func(c *fiber.Ctx) error {
+        inits.DB.Exec("DROP TABLE IF EXISTS appointments,users;")
+        return c.SendString("Test")
     })
 
     apis.SetupRoutes(app)
 
     app.Listen(":"+os.Getenv("port"))
-
 }

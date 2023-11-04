@@ -13,4 +13,5 @@ func InitEnv(){
 	if err != nil {
 		log.Fatal("failed to load env", err)
 	}
+
 }

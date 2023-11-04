@@ -5,28 +5,19 @@ import (
 	"log"
 	"os"
 
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
+	"database/sql"
 
-	"clinic-reservation-system.com/back-end/models"
+	_ "github.com/go-sql-driver/mysql"
 )
 
-var DB *gorm.DB
+var DB *sql.DB
 
 func InitDB() {
 	var err error
-	DB, err = gorm.Open(mysql.Open(os.Getenv("DSN")), &gorm.Config{
-		DisableForeignKeyConstraintWhenMigrating: true,
-	})
+	DB, err = sql.Open("mysql", os.Getenv("DSN"))
 	if err != nil {
 		log.Fatalf("failed to connect: %v", err)
-	}	
-	
-	DB.Migrator().DropTable("doctors")
-	DB.Migrator().DropTable("patients")
-	DB.Migrator().DropTable("appointments")
+	}
 
-	DB.AutoMigrate(&models.Doctor{},&models.Patient{},&models.Appointment{})
-
-	fmt.Println("Migrated");
+	fmt.Println("Migrated")
 }
