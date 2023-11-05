@@ -15,13 +15,12 @@ import (
 func init(){
     inits.InitEnv()
     inits.InitDB()
+        
+    var User models.User;
+    User.InitTable()
     
     var Appointment models.Appointment;
     Appointment.InitTable()
-
-    var User models.User;
-    User.InitTable()
-
 }
 
 
@@ -37,6 +36,8 @@ func main() {
         inits.DB.Exec("DROP TABLE IF EXISTS appointments,users;")
         return c.SendString("Test")
     })
+
+    defer inits.DB.Close()
 
     apis.SetupRoutes(app)
 

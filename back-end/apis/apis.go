@@ -2,39 +2,44 @@ package apis
 
 
 import (
-	"clinic-reservation-system.com/back-end/controllers"
+	"clinic-reservation-system.com/back-end/handlers"
 	"github.com/gofiber/fiber/v2"
 )
 
+var accountHandler handlers.AccountHandler
+var doctorHandler handlers.DoctorHandler
+var patientHandler handlers.PatientHandler
 
 func SetupRoutes(app *fiber.App) {
-	signInUp(app)
-	doctorRoutes(app)
-	patientRoutes(app)
+	api:= app.Group("/api")
+
+	signInUp(&api)
+	doctorRoutes(&api)
+	patientRoutes(&api)
 }
 
 
-func signInUp(app *fiber.App){
-	app.Post("/signin",controllers.SignIn)
-	app.Post("/signup",controllers.SignUp)
+func signInUp(api *fiber.Router){
+	(*api).Post("/signin",accountHandler.SignIn)
+	(*api).Post("/signup",accountHandler.SignUp)
 }
 
 
-func doctorRoutes(app *fiber.App){
-	api := app.Group("/doctor")
+func doctorRoutes(api *fiber.Router){
+	api2 := (*api).Group("/doctor")
 
-	api.Post("/appointment", controllers.DoctorAddAppointment)
-	api.Delete("/appointment", controllers.DoctorDeleteAppointment)	
-	api.Get("/appointment", controllers.DoctorGetAppointment)
+	api2.Post("/appointment", doctorHandler.AddAppointment)
+	api2.Delete("/appointment", doctorHandler.DeleteAppointment)	
+	api2.Get("/appointment", doctorHandler.GetAppointment)
 }
 
 
-func patientRoutes(app *fiber.App){
-	api := app.Group("/patient")
+func patientRoutes(api *fiber.Router){
+	api2 := (*api).Group("/patient")
 
-	api.Post("/appointment", controllers.PatientReserveAppointment)
-	api.Put("/appointment", controllers.PatientEditAppointment)
-	api.Delete("/appointment", controllers.PatientDeleteAppointment)	
-	api.Get("/appointment", controllers.PatientGetAppointment)
+	api2.Post("/appointment", patientHandler.ReserveAppointment)
+	api2.Put("/appointment", patientHandler.EditAppointment)
+	api2.Delete("/appointment", patientHandler.DeleteAppointment)	
+	api2.Get("/appointment", patientHandler.GetAppointment)
 
 }

@@ -19,5 +19,7 @@ func InitDB() {
 		log.Fatalf("failed to connect: %v", err)
 	}
 
+	DB.Query("drop table if exists appointments,users,doctors,patients;")
+
 	fmt.Println("Migrated")
 }
