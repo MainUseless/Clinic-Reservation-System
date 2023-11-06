@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"os"
 
 	"clinic-reservation-system.com/back-end/apis"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+    // "github.com/gofiber/contrib/jwt"
 )
 
 func init(){
@@ -17,10 +19,14 @@ func init(){
     inits.InitDB()
         
     var User models.User;
-    User.InitTable()
+    if !User.InitTable(){
+        log.Fatal("Error in creating users table")
+    }
     
     var Appointment models.Appointment;
-    Appointment.InitTable()
+    if !Appointment.InitTable(){
+        log.Fatal("Error in creating appointments table")
+    }
 }
 
 
@@ -28,18 +34,14 @@ func main() {
 
     app:= fiber.New()
     app.Use(cors.New())
+    apis.SetupRoutes(app)
+
 
     app.Get("/", func(c *fiber.Ctx) error {
-        return c.SendString("Test")
-    })
-    app.Delete("/", func(c *fiber.Ctx) error {
-        inits.DB.Exec("DROP TABLE IF EXISTS appointments,users;")
-        return c.SendString("Test")
+        return c.SendString("Hello, World 👋!")
     })
 
     defer inits.DB.Close()
 
-    apis.SetupRoutes(app)
-
-    app.Listen(":"+os.Getenv("port"))
+    app.Listen("127.0.0.1:"+os.Getenv("port"))
 }

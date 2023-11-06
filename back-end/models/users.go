@@ -7,14 +7,13 @@ import (
 )
 
 type User struct {
+	ID int64			`json:"id"`
 	Name string		`json:"name"`
 	Type string		`json:"type"`
 
 	//should be moved to a separate accounts model to be hashed
 	Email string	`json:"email"`
 	Password string	`json:"password"`
-
-	Appointments []Appointment `json:"appointments"`
 }
 
 func( u User ) InitTable() bool {
@@ -29,31 +28,50 @@ func( u User ) InitTable() bool {
 		);
 		`
 	_,err := inits.DB.Exec(query)
+
+	return err == nil
+
+}
+
+func (u *User) Create() bool {
+	query := `
+	INSERT INTO users(name,type,email,password) VALUES(?,?,?,?);
+	`
+	row,err := inits.DB.Exec(query,u.Name,u.Type,u.Email,u.Password)
 	
-	log.Println(err)
-
-	return err == nil
+	if  err!= nil {
+		log.Println("Error in creating user in database")
+		log.Println(err.Error())
+		return false
+	}
+	
+	var id int64
+	id,err = row.LastInsertId()
+	
+	if err != nil {
+		log.Println("Error in getting last inserted id")
+		log.Println(err.Error())
+		return false
+	}else{
+		(*u).ID = id
+		return true
+	}
 
 }
 
-func (u User) Create() bool {
+func (u *User) Get() bool {
 	query := `
-	INSERT INTO users(name,type,email,password) VALUES($1,$2,$3,$4);
+	SELECT * FROM users WHERE email=? AND password=?;
 	`
-	_,err := inits.DB.Exec(query,u.Name,u.Type,u.Email,u.Password)
 
-	return err == nil
-}
+	err := inits.DB.QueryRow(query,u.Email,u.Password).Scan(&u.ID,&u.Name,&u.Type,&u.Email,&u.Password)
 
-func (u User) Get() User {
-	query := `
-	SELECT * FROM users WHERE email=$1 AND password=$2;
-	`
-	row := inits.DB.QueryRow(query,u.Email,u.Password)
+	if err != nil {
+		log.Println("Error in getting user from database")
+		log.Println(err.Error())
+		return false
+	}else{
+		return true
+	}
 
-	var user User
-
-	row.Scan(&user.Name,&user.Type,&user.Email,&user.Password)
-
-	return user
 }
