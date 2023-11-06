@@ -7,7 +7,7 @@ import (
 )
 
 type User struct {
-	ID int64			`json:"id"`
+	ID uint			`json:"id"`
 	Name string		`json:"name"`
 	Type string		`json:"type"`
 
@@ -45,9 +45,11 @@ func (u *User) Create() bool {
 		return false
 	}
 	
-	var id int64
-	id,err = row.LastInsertId()
+	var Tid int64
+	Tid,err = row.LastInsertId()
 	
+	id := uint(Tid)
+
 	if err != nil {
 		log.Println("Error in getting last inserted id")
 		log.Println(err.Error())
@@ -65,6 +67,24 @@ func (u *User) Get() bool {
 	`
 
 	err := inits.DB.QueryRow(query,u.Email,u.Password).Scan(&u.ID,&u.Name,&u.Type,&u.Email,&u.Password)
+
+	if err != nil {
+		log.Println("Error in getting user from database")
+		log.Println(err.Error())
+		return false
+	}else{
+		return true
+	}
+
+}
+
+
+func (u *User) GetName(id uint) bool {
+	query := `
+	SELECT name FROM users WHERE id=?;
+	`
+
+	err := inits.DB.QueryRow(query,&u.ID).Scan(&u.Name)
 
 	if err != nil {
 		log.Println("Error in getting user from database")

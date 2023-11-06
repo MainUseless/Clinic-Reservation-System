@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"clinic-reservation-system.com/back-end/models"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -27,7 +28,18 @@ func(handler PatientHandler) ReserveAppointment(ctx *fiber.Ctx) error {
 }
 
 func(handler PatientHandler) GetAppointment(ctx *fiber.Ctx) error {
-	return ctx.SendString("PatientGetAppointment")
+	claims := ctx.Locals("user").(*jwt.Token).Claims.(jwt.MapClaims)
+    id := claims["id"].(uint)
+    accountType := claims["type"].(string)
+
+	appointment := models.Appointment{ PatientID:id }
+
+	appointments := appointment.GetAll(accountType)
+
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
+		"appointments": appointments,
+	})
+
 }
 
 func(handler PatientHandler) EditAppointment(ctx *fiber.Ctx) error {

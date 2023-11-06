@@ -52,23 +52,27 @@ func (a Appointment) Delete() bool {
 
 func (a Appointment) GetAll(userType string) []Appointment {
 	var query string
+	var id uint
+
+	log.Println(userType+"======================================")
 
 	if userType == "doctor" {
 		query = `
 		SELECT * FROM appointments WHERE doctor_id=?;
 		`
+		id = a.DoctorID
 	} else {
 		query = `
 		SELECT * FROM appointments WHERE patient_id=?;
 		`
+		id = a.PatientID
 	}
 
-	rows, err := inits.DB.Query(query, a.DoctorID, a.AppointmentTime)
+	rows, err := inits.DB.Query(query, id)
 	var appointments []Appointment
 
 	if err != nil {
-		log.Fatal(err)
-		return appointments
+		panic(err.Error())
 	}
 
 	defer rows.Close()
@@ -77,12 +81,32 @@ func (a Appointment) GetAll(userType string) []Appointment {
 		var appointment Appointment
 		err = rows.Scan(&appointment.DoctorID, &appointment.PatientID, &appointment.AppointmentTime)
 		if err != nil {
-			log.Println(err)
-			return appointments
+			panic(err.Error())
 		}
 		appointments = append(appointments, appointment)
 	}
 
 	return appointments
 
+}
+
+func (a Appointment) CheckIfViable() bool {
+	
+	query := `
+	SELECT EXISTS (
+		SELECT 1
+		FROM appointments
+		WHERE doctor_id=? and ABS(TIMESTAMPDIFF(HOUR, timestamp_column, ?)) != 1
+	) AS result;
+	`
+	
+	var result bool
+
+	err := inits.DB.QueryRow(query, a.DoctorID, a.AppointmentTime).Scan(&result)
+
+	if err != nil || !result {
+		return false;
+	}
+
+	return true;
 }

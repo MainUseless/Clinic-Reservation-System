@@ -39,7 +39,7 @@ func signInUp(api fiber.Router){
 
 
 func doctorRoutes(api fiber.Router){
-	api.Route("/appointment", func(api fiber.Router) {
+	api.Route("/doctor/appointment", func(api fiber.Router) {
 		api.Post("/", doctorHandler.Auth ,doctorHandler.AddAppointment)
 		api.Delete("/", doctorHandler.Auth ,doctorHandler.DeleteAppointment)	
 		api.Get("/", doctorHandler.Auth , doctorHandler.GetAppointment)
@@ -48,7 +48,7 @@ func doctorRoutes(api fiber.Router){
 
 
 func patientRoutes(api fiber.Router){
-	api.Route("/appointment", func(api fiber.Router) {
+	api.Route("/patient/appointment", func(api fiber.Router) {
 		api.Post("/", patientHandler.Auth ,patientHandler.ReserveAppointment)
 		api.Put("/", patientHandler.Auth ,patientHandler.EditAppointment)
 		api.Delete("/", patientHandler.Auth ,patientHandler.DeleteAppointment)	

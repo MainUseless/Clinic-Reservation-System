@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -11,7 +12,8 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
-    // "github.com/gofiber/contrib/jwt"
+	"github.com/gofiber/fiber/v2/middleware/logger"
+	// "github.com/gofiber/contrib/jwt"
 )
 
 func init(){
@@ -34,12 +36,20 @@ func main() {
 
     app:= fiber.New()
     app.Use(cors.New())
+    app.Use(logger.New())
     apis.SetupRoutes(app)
 
 
     app.Get("/", func(c *fiber.Ctx) error {
         return c.SendString("Hello, World 👋!")
     })
+
+    routes := app.GetRoutes()
+
+	// Print the routes
+	for _, route := range routes {
+		fmt.Printf("%s %s\n", route.Method, route.Path)
+	}
 
     defer inits.DB.Close()
 

@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"log"
 	"os"
 
 	"clinic-reservation-system.com/back-end/models"
@@ -49,8 +48,6 @@ func(handler AccountHandler) SignIn(ctx *fiber.Ctx) error {
 }
 
 func(handler AccountHandler) SignUp(ctx *fiber.Ctx) error {
-	log.Println("SignUp")
-	
 	email := ctx.Query("email")
 	password := ctx.Query("password")
 	userType := ctx.Query("type")
