@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"time"
+
 	"clinic-reservation-system.com/back-end/models"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
@@ -24,7 +26,33 @@ func(handler PatientHandler) Auth(ctx *fiber.Ctx) error {
 
 
 func(handler PatientHandler) ReserveAppointment(ctx *fiber.Ctx) error {
-	return ctx.SendString("PatientReserveAppointment")
+	claims := ctx.Locals("user").(*jwt.Token).Claims.(jwt.MapClaims)
+	Tid := claims["id"].(float64)
+	id := uint(Tid)
+	
+	timestamp := ctx.Query("timestamp")
+
+	if timestamp == "" {
+		return ctx.Status(fiber.StatusNoContent).JSON(fiber.Map {"error":"Date or time missing"})
+	}
+
+	date, err := time.Parse("2006-01-02 15:03", timestamp)
+
+	if  err != nil || date.Before(time.Now()){
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map {"error":"invalid date or time"})
+	}
+
+	appointment  := models.Appointment{ PatientID: id, AppointmentTime: date }
+
+
+	if appointment.Create(){
+		return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
+			"result": true,
+		})
+	}
+
+	return ctx.SendStatus(fiber.StatusInternalServerError)
+
 }
 
 func(handler PatientHandler) GetAppointment(ctx *fiber.Ctx) error {

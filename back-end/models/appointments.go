@@ -1,7 +1,6 @@
 package models
 
 import (
-	"log"
 	"time"
 
 	"clinic-reservation-system.com/back-end/inits"
@@ -33,10 +32,23 @@ func (a Appointment) InitTable() bool {
 }
 
 func (a Appointment) Create() bool {
+	if !a.CheckIfViable() {
+		return false
+	}
+
 	query := `
 	INSERT INTO appointments(doctor_id,appointment_time) VALUES(?,?);
 	`
 	_, err := inits.DB.Exec(query, a.DoctorID, a.AppointmentTime)
+
+	return err == nil
+}
+
+func (a Appointment) Reserve() bool{
+	query := `
+	UPDATE appointments SET patient_id=? WHERE doctor_id=? AND appointment_time=?;
+	`
+	_, err := inits.DB.Exec(query, a.PatientID, a.DoctorID, a.AppointmentTime)
 
 	return err == nil
 }
@@ -53,8 +65,6 @@ func (a Appointment) Delete() bool {
 func (a Appointment) GetAll(userType string) []Appointment {
 	var query string
 	var id uint
-
-	log.Println(userType+"======================================")
 
 	if userType == "doctor" {
 		query = `
@@ -96,15 +106,15 @@ func (a Appointment) CheckIfViable() bool {
 	SELECT EXISTS (
 		SELECT 1
 		FROM appointments
-		WHERE doctor_id=? and ABS(TIMESTAMPDIFF(HOUR, timestamp_column, ?)) != 1
+		WHERE doctor_id=? and ABS(TIMESTAMPDIFF(HOUR, appointment_time, ?)) != 1
 	) AS result;
 	`
 	
-	var result bool
+	var isInvalid bool
 
-	err := inits.DB.QueryRow(query, a.DoctorID, a.AppointmentTime).Scan(&result)
+	err := inits.DB.QueryRow(query, a.DoctorID, a.AppointmentTime).Scan(&isInvalid)
 
-	if err != nil || !result {
+	if err != nil || isInvalid {
 		return false;
 	}
 

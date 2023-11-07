@@ -18,6 +18,8 @@ func InitDB() {
 		log.Fatalf("failed to connect: %v", err.Error())
 	}
 
-	DB.Query("drop table if exists appointments,users,doctors,patients;")
+}
 
+func reset(){
+	DB.Query("drop table if exists appointments,users,doctors,patients;")
 }

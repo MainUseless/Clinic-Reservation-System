@@ -33,7 +33,9 @@ func(handler DoctorHandler) AddAppointment(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusNoContent).JSON(fiber.Map {"error":"Date or time missing"})
 	}
 
-	date, err := time.Parse("2006-01-02 15:03", timestamp)
+	// Parse the date string into a time.Time object
+	layout := "2006-01-02 15:04"
+	date, err := time.Parse(layout, timestamp)
 
 	if  err != nil || date.Before(time.Now()){
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map {"error":"invalid date or time"})
