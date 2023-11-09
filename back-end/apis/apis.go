@@ -49,6 +49,7 @@ func doctorRoutes(api fiber.Router) {
 }
 
 func patientRoutes(api fiber.Router) {
+	api.Get("/patient/doctors", patientAuth.Auth, patientHandler.GetDoctors)
 	api.Route("/patient/appointment", func(api fiber.Router) {
 		api.Post("/", patientAuth.Auth, patientHandler.ReserveAppointment)
 		api.Put("/", patientAuth.Auth, patientHandler.EditAppointment)

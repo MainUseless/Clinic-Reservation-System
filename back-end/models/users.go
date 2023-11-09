@@ -33,6 +33,37 @@ func (u User) InitTable() bool {
 
 }
 
+func (u User) GetAll() []User {
+	query := `
+	SELECT id,name FROM users WHERE type=?;
+	`
+
+	rows, err := inits.DB.Query(query, u.Type)
+
+	if err != nil {
+		log.Println("Error in getting users from database")
+		log.Println(err.Error())
+		return nil
+	}
+
+	var users []User
+
+	for rows.Next() {
+		var user User
+		err := rows.Scan(&user.ID, &user.Name)
+
+		if err != nil {
+			log.Println("Error in getting users from database")
+			log.Println(err.Error())
+			return nil
+		}
+
+		users = append(users, user)
+	}
+
+	return users
+}
+
 func (u *User) Create() bool {
 	query := `
 	INSERT INTO users(name,type,email,password) VALUES(?,?,?,?);
@@ -63,10 +94,10 @@ func (u *User) Create() bool {
 
 func (u *User) Get() bool {
 	query := `
-	SELECT * FROM users WHERE email=?;
+	SELECT * FROM users WHERE email=? or id=?;
 	`
 
-	err := inits.DB.QueryRow(query, u.Email).Scan(&u.ID, &u.Name, &u.Type, &u.Email, &u.Password)
+	err := inits.DB.QueryRow(query, u.Email , u.ID).Scan(&u.ID, &u.Name, &u.Type, &u.Email, &u.Password)
 
 	if err != nil {
 		log.Println("Error in getting user from database")
@@ -78,19 +109,19 @@ func (u *User) Get() bool {
 
 }
 
-func (u *User) GetName(id uint) bool {
+func GetName(id uint) string {
 	query := `
 	SELECT name FROM users WHERE id=?;
 	`
-
-	err := inits.DB.QueryRow(query, &u.ID).Scan(&u.Name)
+	var name string;
+	err := inits.DB.QueryRow(query, id).Scan(&name)
 
 	if err != nil {
 		log.Println("Error in getting user from database")
 		log.Println(err.Error())
-		return false
+		return ""
 	} else {
-		return true
+		return name
 	}
 
 }

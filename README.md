@@ -1,8 +1,9 @@
-A webapp made with react , go and sql.
+A webapp made with react , go and mysql.
 
 To setup a .env file is required in root with variables (DSN ,port , jwt_secret).
 
 API routes in back-end/README.md.
+
 
 A  project in Red Hat OpenShift Administration I 4.10 course
 

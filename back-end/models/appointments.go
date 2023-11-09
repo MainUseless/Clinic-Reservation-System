@@ -10,6 +10,7 @@ import (
 type Appointment struct {
 	ID              sql.NullInt64  `json:"id"`
 	DoctorID        sql.NullInt64  `json:"doctor_id"`
+	Name 			sql.NullString `json:"doctor_name"`
 	PatientID       sql.NullInt64  `json:"patient_id"`
 	AppointmentTime sql.NullString `json:"appointment_time"`
 }
@@ -57,29 +58,25 @@ func (a Appointment) Reserve() bool {
 
 func (a Appointment) Delete() bool {
 	query := `
-	DELETE FROM appointments WHERE doctor_id=? AND appointment_time=?;
+	DELETE FROM appointments WHERE id=? and doctor_id=?;
 	`
-	_, err := inits.DB.Exec(query, a.DoctorID, a.AppointmentTime)
+	_, err := inits.DB.Exec(query, a.ID, a.DoctorID)
 
 	return err == nil
 }
 
-func (a Appointment) GetAll(userType string, isMine bool) []Appointment {
+func (a Appointment) GetReserved(userType string) []Appointment {
 	var query string
 	var id sql.NullInt64
 
-	if !isMine {
+	if userType == "doctor" {
 		query = `
-		SELECT * FROM appointments;
-		`
-	} else if userType == "doctor" {
-		query = `
-		SELECT * FROM appointments WHERE doctor_id=?;
+		select users.name, appointments.id, appointments.doctor_id, appointments.patient_id, appointments.appointment_time from users inner join appointments where users.id = appointments.patient_id and appointments.doctor_id = ?;
 		`
 		id = a.DoctorID
 	} else {
 		query = `
-		SELECT * FROM appointments WHERE patient_id=?;
+		select users.name, appointments.id, appointments.doctor_id, appointments.patient_id, appointments.appointment_time from users inner join appointments where users.id = appointments.doctor_id and appointments.patient_id = ?;
 		`
 		id = a.PatientID
 	}
@@ -94,11 +91,9 @@ func (a Appointment) GetAll(userType string, isMine bool) []Appointment {
 		return nil
 	}
 
-	if !isMine {
-		rows, err = inits.DB.Query(query)
-	} else {
-		rows, err = inits.DB.Query(query, idVal)
-	}
+
+	rows, err = inits.DB.Query(query, idVal)
+
 	
 	if err != nil {
 		log.Println(err.Error())
@@ -111,7 +106,7 @@ func (a Appointment) GetAll(userType string, isMine bool) []Appointment {
 	
 	for rows.Next() {
 		var appointment Appointment
-		err = rows.Scan(&appointment.ID, &appointment.DoctorID, &appointment.PatientID, &appointment.AppointmentTime)
+		err = rows.Scan(&appointment.Name, &appointment.ID, &appointment.DoctorID, &appointment.PatientID, &appointment.AppointmentTime)
 		if err != nil {
 			log.Println(err.Error())
 			return nil
@@ -121,6 +116,58 @@ func (a Appointment) GetAll(userType string, isMine bool) []Appointment {
 
 	return appointments
 
+}
+
+func (a Appointment) GetAll(userType string) []Appointment{
+	var query string
+	var id sql.NullInt64
+
+	if userType == "doctor" {
+		query = `
+		select users.name, appointments.id, appointments.doctor_id, appointments.patient_id, appointments.appointment_time from appointments left join users on users.id = appointments.patient_id where appointments.doctor_id = ?;
+		`
+		id = a.DoctorID
+	} else {
+		query = `
+		select users.name, appointments.id, appointments.doctor_id, appointments.patient_id, appointments.appointment_time from appointments left join users on users.id = appointments.doctor_id where appointments.patient_id = ?;
+		`
+		id = a.PatientID
+	}
+
+	var rows *sql.Rows
+	var err error
+
+	idVal, err := id.Value()
+
+	if err != nil {
+		log.Println(err.Error())
+		return nil
+	}
+
+
+	rows, err = inits.DB.Query(query, idVal)
+
+	
+	if err != nil {
+		log.Println(err.Error())
+		return nil
+	}
+	
+	defer rows.Close()
+	
+	var appointments []Appointment
+	
+	for rows.Next() {
+		var appointment Appointment
+		err = rows.Scan(&appointment.Name, &appointment.ID, &appointment.DoctorID, &appointment.PatientID, &appointment.AppointmentTime)
+		if err != nil {
+			log.Println(err.Error())
+			return nil
+		}
+		appointments = append(appointments, appointment)
+	}
+
+	return appointments
 }
 
 func (a Appointment) CheckIfViable() bool {

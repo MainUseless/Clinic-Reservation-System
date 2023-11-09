@@ -11,11 +11,20 @@ import (
 
 type PatientHandler struct{}
 
+func (handler PatientHandler) GetDoctors(ctx *fiber.Ctx) error{
+	doctor := models.User{Type:"doctor"}
+
+	doctors := doctor.GetAll()
+
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
+		"doctors": doctors,
+	})
+}
+
 func (handler PatientHandler) ReserveAppointment(ctx *fiber.Ctx) error {
 	claims := ctx.Locals("user").(*jwt.Token).Claims.(jwt.MapClaims)
 	Tid := claims["id"].(float64)
-	id := uint(Tid)
-	nullableID := sql.NullInt64{Int64: int64(id), Valid: true}
+	nullableID := sql.NullInt64{Int64: int64(Tid), Valid: true}
 
 	appointment_id := ctx.Query("appointment_id")
 
@@ -36,8 +45,7 @@ func (handler PatientHandler) GetAppointment(ctx *fiber.Ctx) error {
 	user := ctx.Locals("user").(*jwt.Token)
 	claims := user.Claims.(jwt.MapClaims)
 	Tid := claims["id"].(float64)
-	id := uint(Tid)
-	nullableID := sql.NullInt64{Int64: int64(id), Valid: true}
+	nullableID := sql.NullInt64{Int64: int64(Tid), Valid: true}
 
 	doctorID := ctx.Query("doctor_id")
 
@@ -46,12 +54,11 @@ func (handler PatientHandler) GetAppointment(ctx *fiber.Ctx) error {
 	var appointments []models.Appointment
 
 	if doctorID == "" {
-		appointments = appointment.GetAll("patient", true)
+		appointments = appointment.GetReserved("patient")
 	} else {
 		intDoctorID, _ := strconv.Atoi(doctorID)
-		nullableDoctorID := sql.NullInt64{Int64: int64(intDoctorID), Valid: true}
-		appointment.DoctorID = nullableDoctorID
-		appointments = appointment.GetAll("doctor", true)
+		appointment.DoctorID = sql.NullInt64{Int64: int64(intDoctorID), Valid: true}
+		appointments = appointment.GetAll("doctor")
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
@@ -63,8 +70,7 @@ func (handler PatientHandler) GetAppointment(ctx *fiber.Ctx) error {
 func (handler PatientHandler) EditAppointment(ctx *fiber.Ctx) error {
 	claims := ctx.Locals("user").(*jwt.Token).Claims.(jwt.MapClaims)
 	Tid := claims["id"].(float64)
-	id := uint(Tid)
-	nullableID := sql.NullInt64{Int64: int64(id), Valid: true}
+	nullableID := sql.NullInt64{Int64: int64(Tid), Valid: true}
 
 	appointmentID, err := strconv.Atoi(ctx.Query("appointment_id"))
 	timeStamp := ctx.Query("timestamp")
@@ -88,8 +94,7 @@ func (handler PatientHandler) EditAppointment(ctx *fiber.Ctx) error {
 func (handler PatientHandler) DeleteAppointment(ctx *fiber.Ctx) error {
 	claims := ctx.Locals("user").(*jwt.Token).Claims.(jwt.MapClaims)
 	Tid := claims["id"].(float64)
-	id := uint(Tid)
-	nullableID := sql.NullInt64{Int64: int64(id), Valid: true}
+	nullableID := sql.NullInt64{Int64: int64(Tid), Valid: true}
 
 	appointmentID, err := strconv.Atoi(ctx.Query("appointment_id"))
 
