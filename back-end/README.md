@@ -12,4 +12,4 @@
 
 note : JWT never expires :)
 
-timestamp format : 2001-02-02.14:24
+timestamp format : 2001-02-02 14:24

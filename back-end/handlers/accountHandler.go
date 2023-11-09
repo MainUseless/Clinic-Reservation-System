@@ -1,36 +1,47 @@
 package handlers
 
 import (
+	"log"
 	"os"
 
 	"clinic-reservation-system.com/back-end/models"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type AccountHandler struct{}
 
 func(handler AccountHandler) SignIn(ctx *fiber.Ctx) error {
-	var account models.User
-	email := ctx.Query("email")
-	password := ctx.Query("password")
+	user := new(models.User)
 
-	if email == "" || password == "" {
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error":"Email or password missing"})
+    if err := ctx.BodyParser(user); err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Missing fields",
+		})
+    }
+
+	if user.Email == "" || user.Password == "" {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error":"Missing fields"})
 	}
 
-	account.Email = email
-	account.Password = password
+	password := user.Password
 
-	if !account.Get(){
+	if !user.Get(){
 		return ctx.Status(fiber.StatusNotFound).JSON(fiber.Map{"error":"Account not found"})
 	}
 
+	err := bcrypt.CompareHashAndPassword([]byte(user.Password),[]byte(password))
+
+	if err != nil {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error":"Incorrect email or password"})
+	}
+
 	claims := jwt.MapClaims{
-		"id":    account.ID,
-		"name":  account.Name,
-		"type":  account.Type,
-		"email": account.Email,
+		"id":    user.ID,
+		"name":  user.Name,
+		"type":  user.Type,
+		"email": user.Email,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -48,23 +59,29 @@ func(handler AccountHandler) SignIn(ctx *fiber.Ctx) error {
 }
 
 func(handler AccountHandler) SignUp(ctx *fiber.Ctx) error {
-	email := ctx.Query("email")
-	password := ctx.Query("password")
-	userType := ctx.Query("type")
-	name := ctx.Query("name")
+	user := new(models.User)
 
-	if email == "" || password == "" || userType == "" || name == "" {
+    if err := ctx.BodyParser(user); err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Missing fields",
+		})
+    }
+
+	if user.Email == "" || user.Password == "" || user.Type == "" || user.Name == "" {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error":"Missing fields"})
 	}
-
-	var account models.User 
+		
+	hashedPassword,err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	
-	account.Email = email
-	account.Password = password
-	account.Type = userType
-	account.Name = name
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Error in hashing password",
+		})
+	}
+	log.Println(string(hashedPassword))
+	user.Password = string(hashedPassword)
 
-	if account.Create(){
+	if user.Create(){
 		return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
 			"message": "Account created successfully",
 		})	

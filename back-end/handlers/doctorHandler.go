@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"time"
 
 	"clinic-reservation-system.com/back-end/models"
@@ -10,22 +11,14 @@ import (
 
 type DoctorHandler struct{}
 
-func(handler DoctorHandler) Auth(ctx *fiber.Ctx) error {
-	claims := ctx.Locals("user").(*jwt.Token).Claims.(jwt.MapClaims)
-	userType := claims["type"].(string)
 
-	if userType != "doctor" {
-		return ctx.SendStatus(fiber.StatusUnauthorized)
-	}
-
-	return ctx.Next()
-}
 
 
 func(handler DoctorHandler) AddAppointment(ctx *fiber.Ctx) error {
 	claims := ctx.Locals("user").(*jwt.Token).Claims.(jwt.MapClaims)
 	Tid := claims["id"].(float64)
 	id := uint(Tid)
+	nullableID := sql.NullInt64{Int64: int64(id), Valid: true}
 	
 	timestamp := ctx.Query("timestamp")
 
@@ -41,7 +34,8 @@ func(handler DoctorHandler) AddAppointment(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map {"error":"invalid date or time"})
 	}
 
-	appointment  := models.Appointment{ DoctorID: id, AppointmentTime: date }
+	var sqlTime sql.NullString = sql.NullString{String: timestamp, Valid: true}
+	appointment  := models.Appointment{ DoctorID: nullableID, AppointmentTime: sqlTime }
 
 
 	if appointment.Create(){
@@ -58,11 +52,12 @@ func(handler DoctorHandler) GetAppointment(ctx *fiber.Ctx) error {
 	claims := ctx.Locals("user").(*jwt.Token).Claims.(jwt.MapClaims)
 	Tid := claims["id"].(float64)
 	id := uint(Tid)
+	nullableID := sql.NullInt64{Int64: int64(id), Valid: true}
     accountType := claims["type"].(string)
 
-	appointment := models.Appointment{ DoctorID:id }
+	appointment := models.Appointment{ DoctorID:nullableID }
 
-	appointments := appointment.GetAll(accountType)
+	appointments := appointment.GetAll(accountType ,true)
 
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
 		"appointments": appointments,

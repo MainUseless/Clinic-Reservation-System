@@ -23,7 +23,7 @@ func( u User ) InitTable() bool {
 		name varchar(30) NOT NULL,
 		type ENUM('doctor','patient') NOT NULL,
 		email varchar(30) NOT NULL UNIQUE,
-		password varchar(30) NOT NULL,
+		password varchar(72) NOT NULL,
 		PRIMARY KEY (id)
 		);
 		`
@@ -63,10 +63,10 @@ func (u *User) Create() bool {
 
 func (u *User) Get() bool {
 	query := `
-	SELECT * FROM users WHERE email=? AND password=?;
+	SELECT * FROM users WHERE email=?;
 	`
 
-	err := inits.DB.QueryRow(query,u.Email,u.Password).Scan(&u.ID,&u.Name,&u.Type,&u.Email,&u.Password)
+	err := inits.DB.QueryRow(query,u.Email).Scan(&u.ID,&u.Name,&u.Type,&u.Email,&u.Password)
 
 	if err != nil {
 		log.Println("Error in getting user from database")

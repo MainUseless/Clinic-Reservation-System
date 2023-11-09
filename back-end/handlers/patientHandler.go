@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"time"
 
 	"clinic-reservation-system.com/back-end/models"
@@ -11,24 +12,11 @@ import (
 type PatientHandler struct{}
 
 
-func(handler PatientHandler) Auth(ctx *fiber.Ctx) error {
-	user := ctx.Locals("user").(*jwt.Token)
-	claims := user.Claims.(jwt.MapClaims)
-	userType := claims["type"].(string)
-
-	if userType != "patient" {
-		return ctx.SendStatus(fiber.StatusUnauthorized)
-	}
-
-	return ctx.Next()
-}
-
-
-
 func(handler PatientHandler) ReserveAppointment(ctx *fiber.Ctx) error {
 	claims := ctx.Locals("user").(*jwt.Token).Claims.(jwt.MapClaims)
 	Tid := claims["id"].(float64)
 	id := uint(Tid)
+	nullableID := sql.NullInt64{Int64: int64(id), Valid: true}
 	
 	timestamp := ctx.Query("timestamp")
 
@@ -36,14 +24,15 @@ func(handler PatientHandler) ReserveAppointment(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusNoContent).JSON(fiber.Map {"error":"Date or time missing"})
 	}
 
-	date, err := time.Parse("2006-01-02 15:03", timestamp)
+	layout := "2006-01-02 15:04"
+	date, err := time.Parse(layout, timestamp)
 
 	if  err != nil || date.Before(time.Now()){
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map {"error":"invalid date or time"})
 	}
 
-	appointment  := models.Appointment{ PatientID: id, AppointmentTime: date }
-
+	var sqlTime sql.NullString = sql.NullString{String: timestamp, Valid: true}
+	appointment  := models.Appointment{ PatientID: nullableID, AppointmentTime: sqlTime }
 
 	if appointment.Create(){
 		return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
@@ -57,12 +46,15 @@ func(handler PatientHandler) ReserveAppointment(ctx *fiber.Ctx) error {
 
 func(handler PatientHandler) GetAppointment(ctx *fiber.Ctx) error {
 	claims := ctx.Locals("user").(*jwt.Token).Claims.(jwt.MapClaims)
-    id := claims["id"].(uint)
+	Tid := claims["id"].(float64)
+	id := uint(Tid)
+	nullableID := sql.NullInt64{Int64: int64(id), Valid: true}
+
     accountType := claims["type"].(string)
 
-	appointment := models.Appointment{ PatientID:id }
+	appointment := models.Appointment{ PatientID:nullableID }
 
-	appointments := appointment.GetAll(accountType)
+	appointments := appointment.GetAll(accountType, false)
 
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
 		"appointments": appointments,

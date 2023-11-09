@@ -1,15 +1,16 @@
 package models
 
 import (
-	"time"
+	"database/sql"
 
 	"clinic-reservation-system.com/back-end/inits"
 )
 
 type Appointment struct {
-	DoctorID        uint      `json:"doctor_id"`
-	PatientID       uint      `json:"patient_id"`
-	AppointmentTime time.Time `json:"appointment_time"`
+	ID              sql.NullInt64  `json:"id"`
+	DoctorID        sql.NullInt64  `json:"doctor_id"`
+	PatientID       sql.NullInt64  `json:"patient_id"`
+	AppointmentTime sql.NullString `json:"appointment_time"`
 }
 
 func (a Appointment) InitTable() bool {
@@ -44,7 +45,7 @@ func (a Appointment) Create() bool {
 	return err == nil
 }
 
-func (a Appointment) Reserve() bool{
+func (a Appointment) Reserve() bool {
 	query := `
 	UPDATE appointments SET patient_id=? WHERE doctor_id=? AND appointment_time=?;
 	`
@@ -62,11 +63,15 @@ func (a Appointment) Delete() bool {
 	return err == nil
 }
 
-func (a Appointment) GetAll(userType string) []Appointment {
+func (a Appointment) GetAll(userType string, isMine bool) []Appointment {
 	var query string
-	var id uint
+	var id sql.NullInt64
 
-	if userType == "doctor" {
+	if !isMine {
+		query = `
+		SELECT * FROM appointments;
+		`
+	} else if userType == "doctor" {
 		query = `
 		SELECT * FROM appointments WHERE doctor_id=?;
 		`
@@ -78,7 +83,15 @@ func (a Appointment) GetAll(userType string) []Appointment {
 		id = a.PatientID
 	}
 
-	rows, err := inits.DB.Query(query, id)
+	var rows *sql.Rows
+	var err error
+
+	if !isMine {
+		rows, err = inits.DB.Query(query)
+	} else {
+		rows, err = inits.DB.Query(query, id)
+	}
+
 	var appointments []Appointment
 
 	if err != nil {
@@ -89,7 +102,7 @@ func (a Appointment) GetAll(userType string) []Appointment {
 
 	for rows.Next() {
 		var appointment Appointment
-		err = rows.Scan(&appointment.DoctorID, &appointment.PatientID, &appointment.AppointmentTime)
+		err = rows.Scan(&appointment.ID, &appointment.DoctorID, &appointment.PatientID, &appointment.AppointmentTime)
 		if err != nil {
 			panic(err.Error())
 		}
@@ -101,22 +114,23 @@ func (a Appointment) GetAll(userType string) []Appointment {
 }
 
 func (a Appointment) CheckIfViable() bool {
-	
+
 	query := `
 	SELECT EXISTS (
 		SELECT 1
 		FROM appointments
-		WHERE doctor_id=? and ABS(TIMESTAMPDIFF(HOUR, appointment_time, ?)) != 1
+		WHERE doctor_id=? and ABS(TIMESTAMPDIFF(HOUR, appointment_time, ?)) < 1
 	) AS result;
 	`
-	
+
 	var isInvalid bool
 
-	err := inits.DB.QueryRow(query, a.DoctorID, a.AppointmentTime).Scan(&isInvalid)
+	time, _ := a.AppointmentTime.Value()
+	err := inits.DB.QueryRow(query, a.DoctorID, time).Scan(&isInvalid)
 
 	if err != nil || isInvalid {
-		return false;
+		return false
 	}
 
-	return true;
+	return true
 }
