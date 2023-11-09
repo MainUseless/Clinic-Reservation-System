@@ -1,0 +1,167 @@
+{
+	"info": {
+		"_postman_id": "59387ed9-9d24-4b25-bd39-20c4aebf6ca8",
+		"name": "CRS",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "25094392"
+	},
+	"item": [
+		{
+			"name": "account",
+			"item": [
+				{
+					"name": "doctor signin",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "localhost:8888/api/account/signin"
+					},
+					"response": []
+				},
+				{
+					"name": "doctor signup",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "localhost:8888/api/account/signup"
+					},
+					"response": []
+				},
+				{
+					"name": "patient signin",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "localhost:8888/api/account/signin"
+					},
+					"response": []
+				},
+				{
+					"name": "patient signup",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "localhost:8888/api/account/signup"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "patient",
+			"item": [
+				{
+					"name": "view my appointments",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "get doctor appointments",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "edit appointment",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "localhost:8888/api/patient/appointment?appointment_id=1&timestamp=2024-01-2 01:30",
+							"host": [
+								"localhost"
+							],
+							"port": "8888",
+							"path": [
+								"api",
+								"patient",
+								"appointment"
+							],
+							"query": [
+								{
+									"key": "appointment_id",
+									"value": "1"
+								},
+								{
+									"key": "timestamp",
+									"value": "2024-01-2 01:30"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "cancel appointment",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "localhost:8888/api/patient/appointment?appointment_id",
+							"host": [
+								"localhost"
+							],
+							"port": "8888",
+							"path": [
+								"api",
+								"patient",
+								"appointment"
+							],
+							"query": [
+								{
+									"key": "appointment_id",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "reserve appointment",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "doctor",
+			"item": [
+				{
+					"name": "add appointment",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "localhost:8888/api/doctor/appointment?timestamp=2024",
+							"host": [
+								"localhost"
+							],
+							"port": "8888",
+							"path": [
+								"api",
+								"doctor",
+								"appointment"
+							],
+							"query": [
+								{
+									"key": "timestamp",
+									"value": "2024"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

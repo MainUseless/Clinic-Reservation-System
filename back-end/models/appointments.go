@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"log"
 
 	"clinic-reservation-system.com/back-end/inits"
 )
@@ -47,9 +48,9 @@ func (a Appointment) Create() bool {
 
 func (a Appointment) Reserve() bool {
 	query := `
-	UPDATE appointments SET patient_id=? WHERE doctor_id=? AND appointment_time=?;
+	UPDATE appointments SET patient_id=? WHERE id=? AND patient_id IS NULL;
 	`
-	_, err := inits.DB.Exec(query, a.PatientID, a.DoctorID, a.AppointmentTime)
+	_, err := inits.DB.Exec(query, a.PatientID, a.ID)
 
 	return err == nil
 }
@@ -86,25 +87,34 @@ func (a Appointment) GetAll(userType string, isMine bool) []Appointment {
 	var rows *sql.Rows
 	var err error
 
+	idVal, err := id.Value()
+
+	if err != nil {
+		log.Println(err.Error())
+		return nil
+	}
+
 	if !isMine {
 		rows, err = inits.DB.Query(query)
 	} else {
-		rows, err = inits.DB.Query(query, id)
+		rows, err = inits.DB.Query(query, idVal)
 	}
-
-	var appointments []Appointment
-
+	
 	if err != nil {
-		panic(err.Error())
+		log.Println(err.Error())
+		return nil
 	}
-
+	
 	defer rows.Close()
-
+	
+	var appointments []Appointment
+	
 	for rows.Next() {
 		var appointment Appointment
 		err = rows.Scan(&appointment.ID, &appointment.DoctorID, &appointment.PatientID, &appointment.AppointmentTime)
 		if err != nil {
-			panic(err.Error())
+			log.Println(err.Error())
+			return nil
 		}
 		appointments = append(appointments, appointment)
 	}
@@ -133,4 +143,22 @@ func (a Appointment) CheckIfViable() bool {
 	}
 
 	return true
+}
+
+func (a Appointment) UnReserve() bool {
+	query := `
+	UPDATE appointments SET patient_id=NULL WHERE id=? and patient_id=?;
+	`
+	_, err := inits.DB.Exec(query, a.ID, a.PatientID)
+
+	return err == nil
+}
+
+func (a Appointment) Edit() bool {
+	query := `
+	UPDATE appointments SET appointment_time=? WHERE id=? and patient_id=?;
+	`
+	_, err := inits.DB.Exec(query, a.AppointmentTime, a.ID, a.PatientID)
+
+	return err == nil
 }

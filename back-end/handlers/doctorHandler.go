@@ -11,9 +11,6 @@ import (
 
 type DoctorHandler struct{}
 
-
-
-
 func(handler DoctorHandler) AddAppointment(ctx *fiber.Ctx) error {
 	claims := ctx.Locals("user").(*jwt.Token).Claims.(jwt.MapClaims)
 	Tid := claims["id"].(float64)
@@ -53,11 +50,10 @@ func(handler DoctorHandler) GetAppointment(ctx *fiber.Ctx) error {
 	Tid := claims["id"].(float64)
 	id := uint(Tid)
 	nullableID := sql.NullInt64{Int64: int64(id), Valid: true}
-    accountType := claims["type"].(string)
 
 	appointment := models.Appointment{ DoctorID:nullableID }
 
-	appointments := appointment.GetAll(accountType ,true)
+	appointments := appointment.GetAll("doctor" ,true)
 
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
 		"appointments": appointments,
@@ -67,5 +63,3 @@ func(handler DoctorHandler) GetAppointment(ctx *fiber.Ctx) error {
 func(handler DoctorHandler) DeleteAppointment(ctx *fiber.Ctx) error {
 	return ctx.SendString("DoctorDeleteAppointment")
 }
-
-
