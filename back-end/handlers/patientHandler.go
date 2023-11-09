@@ -30,8 +30,12 @@ func (handler PatientHandler) ReserveAppointment(ctx *fiber.Ctx) error {
 
 	intAppointmentID, _ := strconv.Atoi(appointment_id)
 	appointment := models.Appointment{PatientID: nullableID, ID: sql.NullInt64{Int64: int64(intAppointmentID), Valid: true}}
-
+	
 	if appointment.Reserve() {
+		//sender send email to doctor
+		// doctorEmail := appointment.GetDoctorEmail()
+
+
 		return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
 			"result": true,
 		})
@@ -51,7 +55,7 @@ func (handler PatientHandler) GetAppointment(ctx *fiber.Ctx) error {
 
 	appointment := models.Appointment{PatientID: nullableID}
 
-	var appointments []models.Appointment
+	var appointments []fiber.Map
 
 	if doctorID == "" {
 		appointments = appointment.GetReserved("patient")
@@ -83,6 +87,9 @@ func (handler PatientHandler) EditAppointment(ctx *fiber.Ctx) error {
 	appointment := models.Appointment{PatientID: nullableID, ID: nullableAppointmentID, AppointmentTime: sql.NullString{String: timeStamp, Valid: true}}
 
 	if appointment.Edit() {
+		//sender send email to doctor
+		// doctorEmail := appointment.GetDoctorEmail()
+
 		return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
 			"result": true,
 		})
@@ -106,6 +113,9 @@ func (handler PatientHandler) DeleteAppointment(ctx *fiber.Ctx) error {
 	appointment := models.Appointment{PatientID: nullableID, ID: nullableAppointmentID}
 
 	if appointment.UnReserve() {
+		//sender send email to doctor
+		// doctorEmail := appointment.GetDoctorEmail()
+		
 		return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
 			"result": true,
 		})

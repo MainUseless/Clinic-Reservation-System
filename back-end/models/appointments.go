@@ -5,7 +5,16 @@ import (
 	"log"
 
 	"clinic-reservation-system.com/back-end/inits"
+	"github.com/gofiber/fiber/v2"
 )
+
+type AppointmentPayload struct {
+	ID int
+	AppointmentTime string
+	Name string
+	DoctorID int
+	PatientID int
+}
 
 type Appointment struct {
 	ID              sql.NullInt64  `json:"id"`
@@ -65,7 +74,7 @@ func (a Appointment) Delete() bool {
 	return err == nil
 }
 
-func (a Appointment) GetReserved(userType string) []Appointment {
+func (a Appointment) GetReserved(userType string) []fiber.Map {
 	var query string
 	var id sql.NullInt64
 
@@ -102,15 +111,29 @@ func (a Appointment) GetReserved(userType string) []Appointment {
 	
 	defer rows.Close()
 	
-	var appointments []Appointment
+	var appointments []fiber.Map
 	
 	for rows.Next() {
-		var appointment Appointment
-		err = rows.Scan(&appointment.Name, &appointment.ID, &appointment.DoctorID, &appointment.PatientID, &appointment.AppointmentTime)
+
+		var Name sql.NullString
+		var ID sql.NullInt64
+		var DoctorID sql.NullInt64
+		var PatientID sql.NullInt64
+		var AppointmentTime sql.NullString
+		
+		err = rows.Scan(&Name, &ID, &DoctorID, &PatientID, &AppointmentTime)
 		if err != nil {
 			log.Println(err.Error())
 			return nil
 		}
+
+		appointment := make(fiber.Map)
+		appointment["name"],_ = Name.Value()
+		appointment["id"],_ = ID.Value()
+		appointment["doctor_id"],_ = DoctorID.Value()
+		appointment["patient_id"],_ = PatientID.Value()
+		appointment["appointment_time"],_ = AppointmentTime.Value()
+
 		appointments = append(appointments, appointment)
 	}
 
@@ -118,20 +141,23 @@ func (a Appointment) GetReserved(userType string) []Appointment {
 
 }
 
-func (a Appointment) GetAll(userType string) []Appointment{
+func (a Appointment) GetAll(userType string) []fiber.Map{
 	var query string
 	var id sql.NullInt64
+	var mapName string
 
 	if userType == "doctor" {
 		query = `
 		select users.name, appointments.id, appointments.doctor_id, appointments.patient_id, appointments.appointment_time from appointments left join users on users.id = appointments.patient_id where appointments.doctor_id = ?;
 		`
 		id = a.DoctorID
+		mapName = "patient_name"
 	} else {
 		query = `
 		select users.name, appointments.id, appointments.doctor_id, appointments.patient_id, appointments.appointment_time from appointments left join users on users.id = appointments.doctor_id where appointments.patient_id = ?;
 		`
 		id = a.PatientID
+		mapName = "doctor_name"
 	}
 
 	var rows *sql.Rows
@@ -144,10 +170,8 @@ func (a Appointment) GetAll(userType string) []Appointment{
 		return nil
 	}
 
-
 	rows, err = inits.DB.Query(query, idVal)
 
-	
 	if err != nil {
 		log.Println(err.Error())
 		return nil
@@ -155,15 +179,28 @@ func (a Appointment) GetAll(userType string) []Appointment{
 	
 	defer rows.Close()
 	
-	var appointments []Appointment
+	var appointments []fiber.Map
 	
 	for rows.Next() {
-		var appointment Appointment
-		err = rows.Scan(&appointment.Name, &appointment.ID, &appointment.DoctorID, &appointment.PatientID, &appointment.AppointmentTime)
+		Name := sql.NullString{}
+		ID := sql.NullInt64{}
+		DoctorID := sql.NullInt64{}
+		PatientID := sql.NullInt64{}
+		AppointmentTime := sql.NullString{}
+
+		err = rows.Scan(&Name, &ID, &DoctorID, &PatientID, &AppointmentTime)
 		if err != nil {
 			log.Println(err.Error())
 			return nil
 		}
+		appointment := make(fiber.Map)
+
+		appointment[mapName],_ = Name.Value()
+		appointment["id"],_ = ID.Value()
+		appointment["doctor_id"],_ = DoctorID.Value()
+		appointment["patient_id"],_ = PatientID.Value()
+		appointment["appointment_time"],_ = AppointmentTime.Value()
+
 		appointments = append(appointments, appointment)
 	}
 
@@ -208,4 +245,22 @@ func (a Appointment) Edit() bool {
 	_, err := inits.DB.Exec(query, a.AppointmentTime, a.ID, a.PatientID)
 
 	return err == nil
+}
+
+func (a Appointment) GetDoctorEmail() string {
+	query :=`
+		SELECT distinct users.email,users.id,appointments.doctor_id FROM users inner join appointments WHERE users.id = appointments.doctor_id and appointments.id = ?;
+	`
+
+	var email string
+	var id int
+	var doctor_id int
+	err := inits.DB.QueryRow(query, a.ID).Scan(&email,&id,&doctor_id)
+
+	if err != nil {
+		log.Println(err.Error())
+		return ""
+	}
+
+	return email
 }

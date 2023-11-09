@@ -99,10 +99,10 @@ func (u *User) Create() bool {
 
 func (u *User) Get() bool {
 	query := `
-	SELECT name,type FROM users WHERE email=? or id=?;
+	SELECT name,type,password FROM users WHERE email=? or id=?;
 	`
 
-	err := inits.DB.QueryRow(query, u.Email , u.ID).Scan(&u.Name, &u.Type)
+	err := inits.DB.QueryRow(query, u.Email , u.ID).Scan(&u.Name, &u.Type,&u.Password)
 
 	if err != nil {
 		log.Println("Error in getting user from database")

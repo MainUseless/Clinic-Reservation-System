@@ -13,12 +13,13 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
-	// "github.com/gofiber/contrib/jwt"
 )
 
 func init(){
     inits.InitEnv()
     inits.InitDB()
+    // inits.Senderinit()
+    // inits.Recieverinit()
         
     var User models.User;
     if !User.InitTable(){
@@ -30,7 +31,6 @@ func init(){
         log.Fatal("Error in creating appointments table")
     }
 }
-
 
 func main() {
 

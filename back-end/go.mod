@@ -8,6 +8,8 @@ require github.com/joho/godotenv v1.5.1
 
 require golang.org/x/crypto v0.15.0
 
+require github.com/rabbitmq/amqp091-go v1.9.0 // indirect
+
 require (
 	github.com/MicahParks/keyfunc/v2 v2.1.0 // indirect
 	github.com/gofiber/contrib/jwt v1.0.7
