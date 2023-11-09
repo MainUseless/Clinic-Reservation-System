@@ -6,6 +6,11 @@ import (
 	"clinic-reservation-system.com/back-end/inits"
 )
 
+type UserPayload struct {
+	ID   uint   `json:"id"`
+	Name string `json:"name"`
+}
+
 type User struct {
 	ID   uint   `json:"id"`
 	Name string `json:"name"`
@@ -33,11 +38,12 @@ func (u User) InitTable() bool {
 
 }
 
-func (u User) GetAll() []User {
+func (u User) GetAll() []UserPayload {
 	query := `
 	SELECT id,name FROM users WHERE type=?;
 	`
 
+	var users []UserPayload
 	rows, err := inits.DB.Query(query, u.Type)
 
 	if err != nil {
@@ -46,10 +52,9 @@ func (u User) GetAll() []User {
 		return nil
 	}
 
-	var users []User
 
 	for rows.Next() {
-		var user User
+		var user UserPayload
 		err := rows.Scan(&user.ID, &user.Name)
 
 		if err != nil {
@@ -94,10 +99,10 @@ func (u *User) Create() bool {
 
 func (u *User) Get() bool {
 	query := `
-	SELECT * FROM users WHERE email=? or id=?;
+	SELECT name,type FROM users WHERE email=? or id=?;
 	`
 
-	err := inits.DB.QueryRow(query, u.Email , u.ID).Scan(&u.ID, &u.Name, &u.Type, &u.Email, &u.Password)
+	err := inits.DB.QueryRow(query, u.Email , u.ID).Scan(&u.Name, &u.Type)
 
 	if err != nil {
 		log.Println("Error in getting user from database")
@@ -105,23 +110,6 @@ func (u *User) Get() bool {
 		return false
 	} else {
 		return true
-	}
-
-}
-
-func GetName(id uint) string {
-	query := `
-	SELECT name FROM users WHERE id=?;
-	`
-	var name string;
-	err := inits.DB.QueryRow(query, id).Scan(&name)
-
-	if err != nil {
-		log.Println("Error in getting user from database")
-		log.Println(err.Error())
-		return ""
-	} else {
-		return name
 	}
 
 }
