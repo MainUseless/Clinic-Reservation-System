@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"os"
+	"regexp"
 
 	"clinic-reservation-system.com/back-end/models"
 	"github.com/gofiber/fiber/v2"
@@ -69,6 +70,16 @@ func (handler AccountHandler) SignUp(ctx *fiber.Ctx) error {
 
 	if user.Email == "" || user.Password == "" || user.Type == "" || user.Name == "" {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Missing fields"})
+	}
+
+	isMatch,_:= regexp.MatchString("^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+$", user.Email)
+
+	if !isMatch {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid email"})	
+	}
+
+	if user.Type != "patient" && user.Type != "doctor" {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid type"})
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)

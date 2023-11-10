@@ -1,4 +1,4 @@
-package inits
+package messaging
 
 import (
 	"context"
