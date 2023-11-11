@@ -5,15 +5,17 @@ import (
 	"os"
 
 	"clinic-reservation-system.com/back-end/apis"
+	"clinic-reservation-system.com/back-end/auth"
 	"clinic-reservation-system.com/back-end/inits"
+	"clinic-reservation-system.com/back-end/messaging"
 	"clinic-reservation-system.com/back-end/models"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/golang-jwt/jwt/v5"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/websocket/v2"
-	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 func init() {
@@ -31,35 +33,10 @@ func init() {
 	}
 }
 
-func consumeAndSendToWebSocket(conn *websocket.Conn) {
-	conne, err := amqp.Dial(os.Getenv("rabbitmq_url"))
-	defer conn.Close()
-
-	ch, err := conne.Channel()
-	defer ch.Close()
-
-	// Consume messages
-	msgs, err := ch.Consume(
-		"hello", // Queue name
-		"",                // Consumer
-		true,              // Auto-acknowledge messages
-		false,             // Exclusive
-		false,             // No local
-		false,             // No wait
-		nil,               // Arguments
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Send messages to WebSocket clients
-	for msg := range msgs {
-		conn.WriteMessage(websocket.TextMessage, msg.Body)
-	}
-}
+var Email string
 
 func main() {
-
+	var DoctorAuth auth.DoctorAuth
 	app := fiber.New()
 	app.Use(cors.New())
 	app.Use(logger.New())
@@ -76,14 +53,18 @@ func main() {
 	// 	fmt.Printf("%s %s\n", route.Method, route.Path)
 	// }
 
-	app.Get("/ws", websocket.New(func(c *websocket.Conn) {
-		// Handle WebSocket connection here
-		// Use the RabbitMQ connection to consume messages and send them to the WebSocket connection
-		consumeAndSendToWebSocket(c)
+	app.Get("/ws",DoctorAuth.Auth ,SetEmail ,websocket.New(func(ctx *websocket.Conn) {
+		messaging.ConsumeAndSendToWebSocket(ctx,Email)
 	}))
 
 	defer inits.DB.Close()
 
 	app.Listen("127.0.0.1:" + os.Getenv("port"))
 
+}
+
+func SetEmail(c *fiber.Ctx) error {
+	claims := c.Locals("user").(*jwt.Token).Claims.(jwt.MapClaims)
+	Email = claims["email"].(string)
+	return c.Next()
 }

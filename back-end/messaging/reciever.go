@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/gofiber/websocket/v2"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
@@ -13,43 +14,30 @@ func FailOnError(err error, msg string) {
 	}
 }
 
-func Recieverinit() {
-	conn, err := amqp.Dial(os.Getenv("rabbitmq_url"))
-	FailOnError(err, "Failed to connect to RabbitMQ")
+
+func ConsumeAndSendToWebSocket(conn *websocket.Conn , queueName string) {
+	conne, err := amqp.Dial(os.Getenv("rabbitmq_url"))
 	defer conn.Close()
 
-	ch, err := conn.Channel()
-	FailOnError(err, "Failed to open a channel")
+	ch, err := conne.Channel()
 	defer ch.Close()
 
-	q, err := ch.QueueDeclare(
-		"hello", // name
-		false,   // durable
-		false,   // delete when unused
-		false,   // exclusive
-		false,   // no-wait
-		nil,     // arguments
-	)
-	FailOnError(err, "Failed to declare a queue")
+	// Consume messages
 	msgs, err := ch.Consume(
-		q.Name, // queue
-		"",     // consumer
-		true,   // auto-ack
-		false,  // exclusive
-		false,  // no-local
-		false,  // no-wait
-		nil,    // args
+		queueName, // Queue name
+		"",                // Consumer
+		true,              // Auto-acknowledge messages
+		false,             // Exclusive
+		false,             // No local
+		false,             // No wait
+		nil,               // Arguments
 	)
-	FailOnError(err, "Failed to register a consumer")
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	var forever chan struct{}
-
-	go func() {
-		for d := range msgs {
-			log.Printf("Received a message: %s", d.Body)
-		}
-	}()
-
-	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
-	<-forever
+	// Send messages to WebSocket clients
+	for msg := range msgs {
+		conn.WriteMessage(websocket.TextMessage, msg.Body)
+	}
 }
