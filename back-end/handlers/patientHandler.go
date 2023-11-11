@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"strconv"
 
-	"clinic-reservation-system.com/back-end/messaging"
+	// "clinic-reservation-system.com/back-end/messaging"
 	"clinic-reservation-system.com/back-end/models"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
@@ -34,8 +34,8 @@ func (handler PatientHandler) ReserveAppointment(ctx *fiber.Ctx) error {
 
 	if appointment.Reserve() {
 		//sender send email to doctor
-		doctorEmail := appointment.GetDoctorContact()
-		messaging.Send(doctorEmail, `{doctor_id:`+strconv.Itoa(int(appointment.DoctorID.Int64))+`,patient_id:`+strconv.Itoa(int(Tid))+`,operation:"ReservationCreated"}`)
+		// doctorEmail := appointment.GetDoctorContact()
+		// messaging.Send(doctorEmail, `{doctor_id:`+strconv.Itoa(int(appointment.DoctorID.Int64))+`,patient_id:`+strconv.Itoa(int(Tid))+`,operation:"ReservationCreated"}`)
 
 		return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
 			"result": true,
@@ -105,7 +105,7 @@ func (handler PatientHandler) EditAppointment(ctx *fiber.Ctx) error {
 
 	if appointment.Reserve() {
 		//sender send email to doctor
-		messaging.Send(doctorEmail, `{doctor_id:`+strconv.Itoa(int(appointment.DoctorID.Int64))+`,patient_id:`+strconv.Itoa(int(Tid))+`,operation:"ReservationEdited"}`)
+		// messaging.Send(doctorEmail, `{doctor_id:`+strconv.Itoa(int(appointment.DoctorID.Int64))+`,patient_id:`+strconv.Itoa(int(Tid))+`,operation:"ReservationEdited"}`)
 
 		return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
 			"result": true,
@@ -131,8 +131,8 @@ func (handler PatientHandler) DeleteAppointment(ctx *fiber.Ctx) error {
 
 	if appointment.UnReserve() {
 		//sender send email to doctor
-		doctorEmail := appointment.GetDoctorContact()
-		messaging.Send(doctorEmail, `{doctor_id:`+strconv.Itoa(int(appointment.DoctorID.Int64))+`,patient_id:`+strconv.Itoa(int(Tid))+`,operation:"ReservationCancelled"}`)
+		// doctorEmail := appointment.GetDoctorContact()
+		// messaging.Send(doctorEmail, `{doctor_id:`+strconv.Itoa(int(appointment.DoctorID.Int64))+`,patient_id:`+strconv.Itoa(int(Tid))+`,operation:"ReservationCancelled"}`)
 
 		return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
 			"result": true,
