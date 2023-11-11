@@ -238,15 +238,6 @@ func (a Appointment) UnReserve() bool {
 	return err == nil
 }
 
-func (a Appointment) Edit() bool {
-	query := `
-	UPDATE appointments SET appointment_time=? WHERE id=? and patient_id=?;
-	`
-	_, err := inits.DB.Exec(query, a.AppointmentTime, a.ID, a.PatientID)
-
-	return err == nil
-}
-
 func (a Appointment) GetDoctorContact() string {
 	query :=`
 		SELECT distinct users.email,users.id,appointments.doctor_id FROM users inner join appointments WHERE users.id = appointments.doctor_id and appointments.id = ?;

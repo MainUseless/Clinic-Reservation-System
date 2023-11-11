@@ -8,7 +8,12 @@ require github.com/joho/godotenv v1.5.1
 
 require golang.org/x/crypto v0.15.0
 
-require github.com/rabbitmq/amqp091-go v1.9.0 // indirect
+require (
+	github.com/fasthttp/websocket v1.5.3 // indirect
+	github.com/gofiber/websocket/v2 v2.2.1 // indirect
+	github.com/rabbitmq/amqp091-go v1.9.0 // indirect
+	github.com/savsgio/gotils v0.0.0-20230208104028-c358bd845dee // indirect
+)
 
 require (
 	github.com/MicahParks/keyfunc/v2 v2.1.0 // indirect

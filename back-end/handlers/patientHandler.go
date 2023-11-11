@@ -78,18 +78,33 @@ func (handler PatientHandler) EditAppointment(ctx *fiber.Ctx) error {
 	nullableID := sql.NullInt64{Int64: int64(Tid), Valid: true}
 
 	appointmentID, err := strconv.Atoi(ctx.Query("appointment_id"))
-	timeStamp := ctx.Query("timestamp")
+	new_appointmentID, err1 := strconv.Atoi(ctx.Query("new_appointment_id"))
 
-	if err != nil || timeStamp == "" {
-		return ctx.Status(fiber.StatusNoContent).JSON(fiber.Map{"error": "Required fields missing"})
+	if err != nil {
+		return ctx.Status(fiber.StatusNoContent).JSON(fiber.Map{"error": "Appointment ID missing"})
+	}
+
+	if err1 != nil {
+		return ctx.Status(fiber.StatusNoContent).JSON(fiber.Map{"error": "New Appointment ID missing"})
 	}
 
 	nullableAppointmentID := sql.NullInt64{Int64: int64(appointmentID), Valid: true}
-	appointment := models.Appointment{PatientID: nullableID, ID: nullableAppointmentID, AppointmentTime: sql.NullString{String: timeStamp, Valid: true}}
+	appointment := models.Appointment{PatientID: nullableID, ID: nullableAppointmentID}
 
-	if appointment.Edit() {
+	doctorEmail := appointment.GetDoctorContact()
+
+	if doctorEmail == "" {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "unable to get doctor contact"})
+	}
+
+	if !appointment.UnReserve(){
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "unable to unreserve appointment"})
+	}
+
+	appointment.ID = sql.NullInt64{Int64: int64(new_appointmentID), Valid: true}
+
+	if appointment.Reserve() {
 		//sender send email to doctor
-		doctorEmail := appointment.GetDoctorContact()
 		messaging.Send(doctorEmail, `{doctor_id:`+strconv.Itoa(int(appointment.DoctorID.Int64))+`,patient_id:`+strconv.Itoa(int(Tid))+`,operation:"ReservationEdited"}`)
 
 		return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
