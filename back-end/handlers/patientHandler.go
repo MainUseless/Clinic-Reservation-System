@@ -42,7 +42,7 @@ func (handler PatientHandler) ReserveAppointment(ctx *fiber.Ctx) error {
 		})
 	}
 
-	return ctx.SendStatus(fiber.StatusInternalServerError)
+	return ctx.SendStatus(fiber.StatusBadRequest)
 
 }
 
@@ -97,7 +97,7 @@ func (handler PatientHandler) EditAppointment(ctx *fiber.Ctx) error {
 		})
 	}
 
-	return ctx.SendStatus(fiber.StatusInternalServerError)
+	return ctx.SendStatus(fiber.StatusBadRequest)
 }
 
 func (handler PatientHandler) DeleteAppointment(ctx *fiber.Ctx) error {
@@ -124,5 +124,5 @@ func (handler PatientHandler) DeleteAppointment(ctx *fiber.Ctx) error {
 		})
 	}
 
-	return ctx.SendStatus(fiber.StatusInternalServerError)
+	return ctx.SendStatus(fiber.StatusBadRequest)
 }

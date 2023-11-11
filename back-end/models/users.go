@@ -9,6 +9,7 @@ import (
 type UserPayload struct {
 	ID   uint   `json:"id"`
 	Name string `json:"name"`
+	Email string `json:"email"`
 }
 
 type User struct {
@@ -40,7 +41,7 @@ func (u User) InitTable() bool {
 
 func (u User) GetAll() []UserPayload {
 	query := `
-	SELECT id,name FROM users WHERE type=?;
+	SELECT id,name,email FROM users WHERE type=?;
 	`
 
 	var users []UserPayload
@@ -55,7 +56,7 @@ func (u User) GetAll() []UserPayload {
 
 	for rows.Next() {
 		var user UserPayload
-		err := rows.Scan(&user.ID, &user.Name)
+		err := rows.Scan(&user.ID, &user.Name, &user.Email)
 
 		if err != nil {
 			log.Println("Error in getting users from database")

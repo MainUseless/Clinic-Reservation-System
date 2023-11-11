@@ -16,7 +16,7 @@ func (handler AccountHandler) SignIn(ctx *fiber.Ctx) error {
 	user := new(models.User)
 
 	if err := ctx.BodyParser(user); err != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Missing fields",
 		})
 	}
@@ -50,7 +50,7 @@ func (handler AccountHandler) SignIn(ctx *fiber.Ctx) error {
 	signedToken, err := token.SignedString([]byte(os.Getenv("jwt_secret")))
 
 	if err != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Error in signing token"})
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Error in signing token"})
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
@@ -63,7 +63,7 @@ func (handler AccountHandler) SignUp(ctx *fiber.Ctx) error {
 	user := new(models.User)
 
 	if err := ctx.BodyParser(user); err != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Missing fields",
 		})
 	}
@@ -72,10 +72,10 @@ func (handler AccountHandler) SignUp(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Missing fields"})
 	}
 
-	isMatch,_:= regexp.MatchString("^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+$", user.Email)
+	isMatch, _ := regexp.MatchString("^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+$", user.Email)
 
 	if !isMatch {
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid email"})	
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid email"})
 	}
 
 	if user.Type != "patient" && user.Type != "doctor" {
@@ -85,7 +85,7 @@ func (handler AccountHandler) SignUp(ctx *fiber.Ctx) error {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 
 	if err != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Error in hashing password",
 		})
 	}
@@ -97,7 +97,7 @@ func (handler AccountHandler) SignUp(ctx *fiber.Ctx) error {
 			"message": "Account created successfully",
 		})
 	} else {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Account already exists or error in creating account",
 		})
 	}
