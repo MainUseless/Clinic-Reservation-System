@@ -52,7 +52,7 @@ func (handler DoctorHandler) GetAppointment(ctx *fiber.Ctx) error {
 
 	appointment := models.Appointment{DoctorID: nullableID}
 
-	appointments := appointment.GetReserved("doctor")
+	appointments := appointment.GetAll("doctor")
 
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
 		"appointments": appointments,

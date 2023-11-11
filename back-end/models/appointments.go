@@ -247,15 +247,14 @@ func (a Appointment) Edit() bool {
 	return err == nil
 }
 
-func (a Appointment) GetDoctorEmail() string {
+func (a Appointment) GetDoctorContact() string {
 	query :=`
 		SELECT distinct users.email,users.id,appointments.doctor_id FROM users inner join appointments WHERE users.id = appointments.doctor_id and appointments.id = ?;
 	`
 
 	var email string
 	var id int
-	var doctor_id int
-	err := inits.DB.QueryRow(query, a.ID).Scan(&email,&id,&doctor_id)
+	err := inits.DB.QueryRow(query, a.ID).Scan(&email,&id,&a.DoctorID)
 
 	if err != nil {
 		log.Println(err.Error())

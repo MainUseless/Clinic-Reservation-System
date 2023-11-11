@@ -54,4 +54,5 @@ func main() {
     defer inits.DB.Close()
 
     app.Listen("127.0.0.1:"+os.Getenv("port"))
+
 }
