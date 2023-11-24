@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"clinic-reservation-system.com/back-end/apis"
-	"clinic-reservation-system.com/back-end/auth"
+	// "clinic-reservation-system.com/back-end/auth"
 	"clinic-reservation-system.com/back-end/inits"
 	"clinic-reservation-system.com/back-end/messaging"
 	"clinic-reservation-system.com/back-end/models"
@@ -34,9 +34,14 @@ func init() {
 }
 
 var Email string
+// CustomClaims represents the claims structure for JWT
+type CustomClaims struct {
+	jwt.Claims
+	Email string `json:"email"`
+}
 
 func main() {
-	var DoctorAuth auth.DoctorAuth
+	// var DoctorAuth auth.DoctorAuth
 	app := fiber.New()
 	app.Use(cors.New())
 	app.Use(logger.New())
@@ -53,7 +58,7 @@ func main() {
 	// 	fmt.Printf("%s %s\n", route.Method, route.Path)
 	// }
 
-	app.Get("/ws",DoctorAuth.Auth ,SetEmail ,websocket.New(func(ctx *websocket.Conn) {
+	app.Get("/ws",VerifyAndSetEmail,websocket.New(func(ctx *websocket.Conn) {
 		messaging.ConsumeAndSendToWebSocket(ctx,Email)
 	}))
 
@@ -63,8 +68,21 @@ func main() {
 
 }
 
-func SetEmail(c *fiber.Ctx) error {
-	claims := c.Locals("user").(*jwt.Token).Claims.(jwt.MapClaims)
-	Email = claims["email"].(string)
+func VerifyAndSetEmail(c *fiber.Ctx) error {
+	token,err :=jwt.Parse(c.Query("JWT") , func(token *jwt.Token) (interface{}, error) {
+		return []byte(os.Getenv("jwt_secret")), nil
+	})
+
+	if err != nil {
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+
+	if token.Valid {
+		claims := token.Claims.(jwt.MapClaims)
+		Email = claims["email"].(string)
+	} else {
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+
 	return c.Next()
 }

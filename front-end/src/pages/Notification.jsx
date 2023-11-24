@@ -1,6 +1,14 @@
+import { Constants } from '../services/constants';
+
 export default function Notification() {
 	// for rabbitmq
-	const socket = new WebSocket('ws://localhost:8080/ws');
+	const socket = new WebSocket(`ws://localhost:${Constants.PORT}/ws?JWT=${localStorage.getItem('auth-token')}`);
+
+	socket.onopen = () => {
+		console.log('Connected to server');
+		socket.send(JSON.stringify({ type : "authenticate" , token : localStorage.getItem('auth-token') }));
+	}
+
 	socket.onmessage = (event) => {
 		// Handle received messages from the server (RabbitMQ)
 		alert(event.data);

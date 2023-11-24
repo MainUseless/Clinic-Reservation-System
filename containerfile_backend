@@ -1,0 +1,23 @@
+#1st stage
+FROM golang:1.21.3-bullseye as go-builder
+
+WORKDIR /usr/src/app
+
+COPY ./back-end .
+
+RUN go mod download && go mod verify && go build -o main .
+
+
+#2nd stage
+FROM bitnami/minideb:stretch
+
+WORKDIR /
+
+COPY --from=go-builder /usr/src/app/main .
+
+ENV port=9999\
+    mysql_url="root:password@tcp(localhost:3306)/test"\
+    rabbitmq_url="amqp://guest:guest@localhost:5672/"\
+    jwt_secret="ws-ws-ws-wsssssb"
+
+CMD [ "./main" ]

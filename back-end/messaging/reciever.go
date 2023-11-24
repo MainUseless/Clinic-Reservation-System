@@ -10,7 +10,7 @@ import (
 
 func FailOnError(err error, msg string) {
 	if err != nil {
-		log.Panicf("%s: %s", msg, err)
+		log.Printf("%s: %s", msg, err)
 	}
 }
 
@@ -22,9 +22,19 @@ func ConsumeAndSendToWebSocket(conn *websocket.Conn , queueName string) {
 	ch, err := conne.Channel()
 	defer ch.Close()
 
+	q, err := ch.QueueDeclare(
+		queueName, // name
+		false,   // durable
+		false,   // delete when unused
+		false,   // exclusive
+		false,   // no-wait
+		nil,     // arguments
+		)
+	FailOnError(err, "Failed to declare a queue")
+
 	// Consume messages
 	msgs, err := ch.Consume(
-		queueName, // Queue name
+		q.Name, // Queue name
 		"",                // Consumer
 		true,              // Auto-acknowledge messages
 		false,             // Exclusive
@@ -32,12 +42,15 @@ func ConsumeAndSendToWebSocket(conn *websocket.Conn , queueName string) {
 		false,             // No wait
 		nil,               // Arguments
 	)
+
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 
 	// Send messages to WebSocket clients
 	for msg := range msgs {
 		conn.WriteMessage(websocket.TextMessage, msg.Body)
+		log.Printf(" [x] recieved %s\n", msg.Body)
 	}
+
 }

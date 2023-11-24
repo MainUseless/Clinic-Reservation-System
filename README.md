@@ -1,6 +1,6 @@
 A webapp made with react , go and mysql.
 
-To setup a .env file is required in root with variables (DSN ,port , jwt_secret).
+To setup a .env file is required in root with variables (mysql_url ,port , jwt_secret).
 
 API routes in back-end/README.md.
 
