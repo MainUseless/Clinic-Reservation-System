@@ -1,0 +1,8 @@
+FROM mysql:8.0
+
+LABEL description="MySQL Database for Project Clinica"
+
+ENV MYSQL_ROOT_PASSWORD=root_password
+ENV MYSQL_DATABASE=clinic
+
+# EXPOSE 3306

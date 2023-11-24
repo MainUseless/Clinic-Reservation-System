@@ -22,6 +22,6 @@ func InitDB() {
 	}
 }
 
-func reset() {
-	DB.Query("drop table if exists appointments,users,doctors,patients;")
-}
+// func reset() {
+// 	DB.Query("drop table if exists appointments,users,doctors,patients;")
+// }
