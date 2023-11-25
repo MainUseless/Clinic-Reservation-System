@@ -4,7 +4,7 @@ docker network create back-mysql-net
 
 mysql :-
     docker build --file containerfile_mysql -t mysql-image:1.0 .
-    docker run -d --name mysql-container -e MYSQL_ROOT_PASSWORD -e MYSQL_DATABASE --net back-mysql-net mysql-image:1.0
+    docker run -d --name mysql-container -e MYSQL_ROOT_PASSWORD -e MYSQL_DATABASE -v mysql-data:/var/lib/mysql --net back-mysql-net mysql-image:1.0
 
 rabbitmq :-
     docker build --file containerfile_rabbitmq -t rabbitmq-image:1.0 .
@@ -13,10 +13,10 @@ rabbitmq :-
 backend :- 
     docker build --file containerfile_backend -t clinic-backend-image:1.0 ..
     docker create --name clinic-backend-container -e port -e jwt_secret -e rabbitmq_url -e mysql_url clinic-backend-image:1.0
-    docker network connect front-back-net
-    docker network connect back-rabbitmq-net
-    docker network connect back-mysql-net
-    docker start -d clinic-backend-container
+    docker network connect front-back-net clinic-backend-container  
+    docker network connect back-rabbitmq-net clinic-backend-container 
+    docker network connect back-mysql-net clinic-backend-container 
+    docker start clinic-backend-container
 
 TODO YOUSEFF
 frontend :-
