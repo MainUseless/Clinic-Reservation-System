@@ -9,14 +9,15 @@ export const setFormData = (e, data, setData) => {
 
 export const register = (e, registerData, setMessage, navigate) => {
 	e.preventDefault();
-	const api = `http://localhost:${Constants.PORT}/api/account/signup`;
+	const api = `http://clinic-backend-container:${Constants.PORT}/api/account/signup`;
 	axios
 		.post(api, registerData)
 		.then(() => {
 			navigate('/login');
 		})
 		.catch((error) => {
-			setMessage(error.response.data.error);
+			console.log(error);
+			setMessage(error);
 			// Handle error
 		});
 };
@@ -32,7 +33,7 @@ export const login = (e, loginData, setMessage, saveUserData, navigate) => {
 			navigate('/');
 		})
 		.catch((error) => {
-			setMessage(error.response.data.error);
+			setMessage(error);
 			// Handle error
 		});
 };

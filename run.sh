@@ -18,15 +18,16 @@ docker run -d --name rabbitmq-container --net back-rabbitmq-net rabbitmq-image:1
 
 # backend :- 
 docker build --file ./containerfile/containerfile_backend -t clinic-backend-image:1.0 .
-docker create --name clinic-backend-container -e port=9999 -e jwt_secret="test" \
+docker create --name clinic-backend-container -p 9555:9999 -e port=9999 -e jwt_secret="test" \
     -e rabbitmq_url="amqp://guest:guest@rabbitmq-container:5672/" \
-    -e mysql_url="root:passwd@tcp(mysql-container:3306)/clinic" clinic-backend-image:1.0
+    -e mysql_url="root:passwd@tcp(mysql-container:3306)/clinic" \
+    --net back-mysql-net clinic-backend-image:1.0
 docker network connect front-back-net clinic-backend-container
 docker network connect back-rabbitmq-net clinic-backend-container
-docker network connect back-mysql-net clinic-backend-container
 docker start clinic-backend-container
 
-#TODO
+
 #frontend :-
 docker build --file ./containerfile/containerfile_frontend -t clinic-frontend-image:1.0 .
+docker run -d --name clinic-frontend-container --net front-back-net -p 8090:8080 clinic-frontend-image:1.0
 

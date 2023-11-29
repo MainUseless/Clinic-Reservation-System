@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"strings"
 
 	"clinic-reservation-system.com/back-end/apis"
 	// "clinic-reservation-system.com/back-end/auth"
@@ -43,7 +44,21 @@ type CustomClaims struct {
 func main() {
 	// var DoctorAuth auth.DoctorAuth
 	app := fiber.New()
-	app.Use(cors.New())
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "*",
+		AllowHeaders:  "Origin, Content-Type, Accept",
+		AllowOriginsFunc: func(origin string) bool {
+			return true
+		},
+		AllowMethods: strings.Join([]string{
+			fiber.MethodGet,
+			fiber.MethodPost,
+			fiber.MethodHead,
+			fiber.MethodPut,
+			fiber.MethodDelete,
+			fiber.MethodPatch,
+		}, ","),
+	}))
 	app.Use(logger.New())
 	apis.SetupRoutes(app)
 
@@ -64,7 +79,7 @@ func main() {
 
 	defer inits.DB.Close()
 
-	app.Listen("127.0.0.1:" + os.Getenv("port"))
+	app.Listen(":" + os.Getenv("port"))
 
 }
 

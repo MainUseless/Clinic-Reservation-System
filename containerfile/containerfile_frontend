@@ -1,27 +1,23 @@
-# Use a Node.js base image
-
-FROM node:latest
-
-# Set the working directory in the container
+#stage 1
+FROM node:18-alpine as react-builder
 
 WORKDIR /usr/src/app
 
-# Copy package.json and package-lock.json to the working directory
+COPY ./front-end/ .
 
-COPY package.json package-lock.json .
+RUN npm ci 
 
-# Install dependencies
+Expose 8080
 
-RUN npm install
+CMD ["npm","run","dev"]
 
-# Copy all files from the current directory to the working directory
 
-COPY . .
+#stage 2
 
-# Expose the port the app runs on
+# FROM httpd:2.4-alpine
 
-EXPOSE 5173
+# workdir /var/www/react
 
-# Define the command to start the app
+# COPY --from=react-builder /usr/src/app/dist /var/www/react
 
-CMD ["npm", "run","dev"]
+# EXPOSE 5173

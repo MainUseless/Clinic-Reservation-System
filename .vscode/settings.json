@@ -1,3 +1,4 @@
 {
-    "cmake.sourceDirectory": "F:/S04E01/Podman/project/Clinic-Reservation-System/front-end/node_modules/nan"
+    "cmake.sourceDirectory": "F:/S04E01/Podman/project/Clinic-Reservation-System/front-end/node_modules/nan",
+    "git.ignoreLimitWarning": true
 }

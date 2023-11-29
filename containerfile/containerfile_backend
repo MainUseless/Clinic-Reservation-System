@@ -14,6 +14,7 @@ FROM bitnami/minideb:stretch
 WORKDIR /
 
 COPY --from=go-builder /usr/src/app/main .
+COPY --from=go-builder /usr/src/app/.env .
 
 ARG port=9999
 
