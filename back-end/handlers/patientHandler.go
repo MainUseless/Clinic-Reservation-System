@@ -88,6 +88,10 @@ func (handler PatientHandler) EditAppointment(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusNoContent).JSON(fiber.Map{"error": "New Appointment ID missing"})
 	}
 
+	if appointmentID == new_appointmentID {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "new appointment id is the same as the old one"})
+	}
+
 	nullableAppointmentID := sql.NullInt64{Int64: int64(appointmentID), Valid: true}
 	appointment := models.Appointment{PatientID: nullableID, ID: nullableAppointmentID}
 

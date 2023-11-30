@@ -9,22 +9,21 @@ export const setFormData = (e, data, setData) => {
 
 export const register = (e, registerData, setMessage, navigate) => {
 	e.preventDefault();
-	const api = `http://clinic-backend-container:${Constants.PORT}/api/account/signup`;
+	const api = `http://localhost:${Constants.BACKEND_PORT}/api/account/signup`;
 	axios
 		.post(api, registerData)
 		.then(() => {
 			navigate('/login');
 		})
 		.catch((error) => {
-			console.log(error);
-			setMessage(error);
+			setMessage(error.response.data.error);
 			// Handle error
 		});
 };
 
 export const login = (e, loginData, setMessage, saveUserData, navigate) => {
 	e.preventDefault();
-	const api = `http://localhost:${Constants.PORT}/api/account/signin`;
+	const api = `http://localhost:${Constants.BACKEND_PORT}/api/account/signin`;
 	axios
 		.post(api, loginData)
 		.then(({ data }) => {
@@ -33,7 +32,7 @@ export const login = (e, loginData, setMessage, saveUserData, navigate) => {
 			navigate('/');
 		})
 		.catch((error) => {
-			setMessage(error);
+			setMessage(error.response.data.error);
 			// Handle error
 		});
 };
@@ -43,7 +42,7 @@ export const createSlot = async (e, slotData, setMessage) => {
 	let timestamp;
 	if (slotData.date.length == 0 || slotData.time.length == 0) timestamp = '';
 	else timestamp = slotData.date + ' ' + slotData.time;
-	const api = `http://localhost:${Constants.PORT}/api/doctor/appointment`;
+	const api = `http://localhost:${Constants.BACKEND_PORT}/api/doctor/appointment`;
 	await axios
 		.post(api, null, {
 			params: { timestamp },
@@ -62,7 +61,7 @@ export const createSlot = async (e, slotData, setMessage) => {
 };
 
 export const deleteSlot = async (id) => {
-	const api = `http://localhost:${Constants.PORT}/api/doctor/appointment`;
+	const api = `http://localhost:${Constants.BACKEND_PORT}/api/doctor/appointment`;
 	await axios.delete(api, {
 		headers: {
 			Authorization: 'Bearer ' + localStorage.getItem('auth-token'),
@@ -72,7 +71,7 @@ export const deleteSlot = async (id) => {
 };
 
 export const getDoctorSlots = async (callback) => {
-	const api = `http://localhost:${Constants.PORT}/api/doctor/appointment`;
+	const api = `http://localhost:${Constants.BACKEND_PORT}/api/doctor/appointment`;
 	const { data } = await axios.get(api, {
 		headers: {
 			Authorization: 'Bearer ' + localStorage.getItem('auth-token'),
@@ -84,7 +83,7 @@ export const getDoctorSlots = async (callback) => {
 };
 
 export const getAllDoctors = async (callback) => {
-	const api = `http://localhost:${Constants.PORT}/api/patient/doctors`;
+	const api = `http://localhost:${Constants.BACKEND_PORT}/api/patient/doctors`;
 	const { data } = await axios.get(api, {
 		headers: {
 			Authorization: 'Bearer ' + localStorage.getItem('auth-token'),
@@ -96,7 +95,7 @@ export const getAllDoctors = async (callback) => {
 };
 
 export const getPatientDoctors = async (callback) => {
-	const api = `http://localhost:${Constants.PORT}/api/patient/appointment`;
+	const api = `http://localhost:${Constants.BACKEND_PORT}/api/patient/appointment`;
 
 	const { data } = await axios.get(api, {
 		headers: {
@@ -109,7 +108,7 @@ export const getPatientDoctors = async (callback) => {
 };
 
 export const getDrSlotsById = async (id, setSlots) => {
-	const api = `http://localhost:${Constants.PORT}/api/patient/appointment`;
+	const api = `http://localhost:${Constants.BACKEND_PORT}/api/patient/appointment`;
 	const { data } = await axios.get(api, {
 		headers: {
 			Authorization: 'Bearer ' + localStorage.getItem('auth-token'),
@@ -122,7 +121,7 @@ export const getDrSlotsById = async (id, setSlots) => {
 
 export const reserveSlot = async (e, id) => {
 	e.preventDefault();
-	const api = `http://localhost:${Constants.PORT}/api/patient/appointment`;
+	const api = `http://localhost:${Constants.BACKEND_PORT}/api/patient/appointment`;
 	await axios.post(api, null, {
 		headers: {
 			Authorization: 'Bearer ' + localStorage.getItem('auth-token'),
@@ -132,7 +131,7 @@ export const reserveSlot = async (e, id) => {
 };
 
 export const getAppointments = async (callback) => {
-	const api = `http://localhost:${Constants.PORT}/api/patient/appointment`;
+	const api = `http://localhost:${Constants.BACKEND_PORT}/api/patient/appointment`;
 	const { data } = await axios.get(api, {
 		headers: { Authorization: 'Bearer ' + localStorage.getItem('auth-token') },
 	});
@@ -141,7 +140,7 @@ export const getAppointments = async (callback) => {
 };
 
 export const deleteAppointment = async (id) => {
-	const api = `http://localhost:${Constants.PORT}/api/patient/appointment`;
+	const api = `http://localhost:${Constants.BACKEND_PORT}/api/patient/appointment`;
 	await axios.delete(api, {
 		headers: { Authorization: 'Bearer ' + localStorage.getItem('auth-token') },
 		params: {
@@ -151,7 +150,7 @@ export const deleteAppointment = async (id) => {
 };
 export const editAppointmentSlot = async (e, editedData) => {
 	e.preventDefault();
-	const api = `http://localhost:${Constants.PORT}/api/patient/appointment`;
+	const api = `http://localhost:${Constants.BACKEND_PORT}/api/patient/appointment`;
 	await axios.put(api, null, {
 		headers: { Authorization: 'Bearer ' + localStorage.getItem('auth-token') },
 		params: editedData,

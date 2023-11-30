@@ -1,3 +1,3 @@
 export const Constants = {
-	PORT: '9999',
+	BACKEND_PORT: '9999',
 };

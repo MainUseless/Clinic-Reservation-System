@@ -46,7 +46,7 @@ func main() {
 	app := fiber.New()
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "*",
-		AllowHeaders:  "Origin, Content-Type, Accept",
+		AllowHeaders:  "Origin, Content-Type, Accept, Authorization",
 		AllowOriginsFunc: func(origin string) bool {
 			return true
 		},
@@ -78,6 +78,8 @@ func main() {
 	}))
 
 	defer inits.DB.Close()
+
+	log.Println("secret key is: ", os.Getenv("jwt_secret"))
 
 	app.Listen(":" + os.Getenv("port"))
 

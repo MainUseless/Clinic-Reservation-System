@@ -1,4 +1,4 @@
-#stage 1
+#1st stage
 FROM node:18-alpine as react-builder
 
 WORKDIR /usr/src/app
@@ -7,17 +7,15 @@ COPY ./front-end/ .
 
 RUN npm ci 
 
-Expose 8080
+# Expose 8080
 
 CMD ["npm","run","dev"]
 
 
-#stage 2
+# 2nd stage
 
 # FROM httpd:2.4-alpine
 
 # workdir /var/www/react
 
-# COPY --from=react-builder /usr/src/app/dist /var/www/react
-
-# EXPOSE 5173
+# COPY --from=react-builder /usr/src/app/dist /var/www

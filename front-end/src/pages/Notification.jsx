@@ -2,7 +2,7 @@ import { Constants } from '../services/constants';
 
 export default function Notification() {
 	// for rabbitmq
-	const socket = new WebSocket(`ws://localhost:${Constants.PORT}/ws?JWT=${localStorage.getItem('auth-token')}`);
+	const socket = new WebSocket(`ws://localhost:${Constants.BACKEND_PORT}/ws?JWT=${localStorage.getItem('auth-token')}`);
 
 	socket.onopen = () => {
 		console.log('Connected to server');
