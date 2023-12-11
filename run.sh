@@ -46,4 +46,5 @@ docker start clinic-backend-container
 #frontend :-
 docker build --file ./containerfile/containerfile_frontend -t clinic-frontend-image:1.0 .
 docker run -d --name clinic-frontend-container --net front-back-net -p $exposed_frontend_port:$inner_frontend_port \
-    -e REACT_APP_PORT=$inner_frontend_port -e REACT_APP_BACKEND_PORT=$exposed_backend_port clinic-frontend-image:1.0
+    -e REACT_APP_PORT=$inner_frontend_port -e REACT_APP_BACKEND_PORT=$exposed_backend_port -e VITE_BACKEND_URL=http://localhost:$exposed_backend_port \
+    clinic-frontend-image:1.0

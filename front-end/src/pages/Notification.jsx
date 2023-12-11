@@ -1,8 +1,12 @@
-import { Constants } from '../services/constants';
+
+function removeProtocol(url) {
+    return url.replace(/^https?:\/\//, '');
+}
 
 export default function Notification() {
 	// for rabbitmq
-	const socket = new WebSocket(`ws://localhost:${Constants.BACKEND_PORT}/ws?JWT=${localStorage.getItem('auth-token')}`);
+
+	const socket = new WebSocket(`ws://${removeProtocol(import.meta.env.VITE_BACKEND_URL)}/ws?JWT=${localStorage.getItem('auth-token')}`);
 
 	socket.onopen = () => {
 		console.log('Connected to server');
